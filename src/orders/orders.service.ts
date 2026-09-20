@@ -6,6 +6,7 @@ import { CreateOrderDto } from './dto/create-order.dto.js';
 export class OrdersService {
     constructor(private readonly prisma: PrismaService) {}
 
+
     async create(userId: number, createOrderDto: CreateOrderDto) {
         const order = await this.prisma.order.create({
         data: {
@@ -15,5 +16,17 @@ export class OrdersService {
         });
 
         return order;
+    }
+
+
+    async findMyOrders(userId: number) {
+    return this.prisma.order.findMany({
+        where: {
+        userId,
+        },
+        orderBy: {
+        createdAt: 'desc',
+        },
+    });
     }
 }

@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Get,
     Post,
     Req,
     UseGuards,
@@ -23,5 +24,14 @@ export class OrdersController {
         request.user.userId,
         createOrderDto,
         );
+    }
+
+
+    @Get()
+    @UseGuards(JwtAuthGuard)
+    findMyOrders(@Req() request: any) {
+    return this.ordersService.findMyOrders(
+        request.user.userId,
+    );
     }
 }
