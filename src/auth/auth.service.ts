@@ -3,11 +3,14 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService,
+        private readonly jwtService: JwtService,
+    ) {}
 
     async register(registerDto: RegisterDto) {
         const { name, email, password } = registerDto;
@@ -33,12 +36,24 @@ export class AuthService {
             passwordHash,
         },
         });
+        
+        // Create the JWT Token
+        // Data we want in JWT
+        const payload = {
+            sub: user.id,
+            email: user.email,
+        };
+
+        // Generate JWT Token
+        const accessToken = await this.jwtService.signAsync(payload);
+
 
         return {
         id: user.id,
         name: user.name,
         email: user.email,
-        password: user.passwordHash
+        password: user.passwordHash,
+        token: accessToken
         };
     }
 
@@ -68,11 +83,21 @@ export class AuthService {
             throw new UnauthorizedException('Invalid email or password');
         }
 
+        // Data we want in JWT
+        const payload = {
+            sub: user.id,
+            email: user.email,
+        };
+
+        // Generate JWT Token
+        const accessToken = await this.jwtService.signAsync(payload);
+
         // Return the user information
         return {
             id: user.id,
             name: user.name,
             email: user.email,
+            token: accessToken
         };
     }
 }
